@@ -1,6 +1,7 @@
 import sqlite3
 from library_system.book import Book
 
+
 class BookRepository:
     def __init__(self, db_path=":memory:"):
         self.connection = sqlite3.connect(db_path)
@@ -34,6 +35,17 @@ class BookRepository:
             "SELECT id, title, author, isbn FROM books ORDER BY id"
         ).fetchall()
         return [Book(**dict(row)) for row in rows]
+
+    def count_books(self):
+        row = self.connection.execute("SELECT COUNT(*) AS total FROM books").fetchone()
+        return row["total"]
+
+    def delete_by_isbn(self, isbn):
+        with self.connection:
+            cursor = self.connection.execute(
+                "DELETE FROM books WHERE isbn = ?", (isbn,)
+            )
+        return cursor.rowcount > 0
 
     def close(self):
         self.connection.close()
